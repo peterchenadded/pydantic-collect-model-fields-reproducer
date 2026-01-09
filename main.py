@@ -43,9 +43,14 @@ def generate_subclasses(n: int):
     test_instance = subclasses[1]()
     logger.info("DynamicModel0.__mro__=%s", subclasses[0].__mro__)
     logger.info("DynamicModel0.__bases__=%s", subclasses[0].__bases__)
+
+    # Test values are correct
     assert isinstance(test_instance, AWSCloudContainer)
     assert test_instance.name == "aws_cloud_container"
     assert test_instance.owner == "aws_team"
+    assert test_instance.status == "target"
+    assert test_instance.field_a == "value_a"
+    assert test_instance.field_b == 42
 
 
 if __name__ == "__main__":
