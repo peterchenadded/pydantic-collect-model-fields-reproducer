@@ -38,12 +38,12 @@ uv run snakeviz prof/combined.prof
 
 ## Analysis
 
-From the profile you can see get_model_type_hints being high because it is looping across `obj.__mro__` which tries to eval every annotation for every base class.
+From the profile you can see `collect_model_fields` being high because it uses `get_model_type_hints`. `get_model_type_hints` then uses `obj.__mro__` to eval every annotation for every base class.
 
-This is not necessary though because `collect_model_fields` already has `parent_fields_lookup` which contains all the field info already for the parents.
+This is not necessary because `collect_model_fields` already has `parent_fields_lookup` which contains all the field info from the parents.
 
-`collect_model_fields` should:
+I think `collect_model_fields` should be updated to use below logic:
 
-1. get parent_fields_lookup which it already does
+1. get `parent_fields_lookup` which it already does
 2. get the annotations just for obj.__mro__[0] (the class being constructed)
 3. combine 1 & 2 to give the final hints
