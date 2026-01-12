@@ -56,6 +56,22 @@ def custom_copy_using_new_and_specific(field: FieldInfo) -> FieldInfo:
 
     return new_field
 
+def slot_copy():
+    slots = FieldInfo.__slots__
+    lines = ["def copy_slots(dest, src):"]
+    for slot in slots:
+        lines.append(f"  dest.{slot} = src.{slot}")
+    namespace = {}
+    exec("\n".join(lines), namespace)
+    return namespace['copy_slots']
+
+copy_slots = slot_copy()
+
+def custom_copy_using_new_and_exec(field: FieldInfo) -> FieldInfo:
+    new_field = FieldInfo.__new__(FieldInfo)
+    copy_slots(new_field, field)
+    return new_field
+
 def check_field(field: FieldInfo):
     for name in FieldInfo.__slots__:
         assert getattr(field, name) == getattr(test_field, name)
@@ -69,6 +85,7 @@ scenarios = [
     Scenario(id="custom_copy_using_init_and_attrs", func=custom_copy_using_init_and_attrs),
     Scenario(id="custom_copy_using_new_and_attrs", func=custom_copy_using_new_and_attrs),
     Scenario(id="custom_copy_using_new_and_specific", func=custom_copy_using_new_and_specific),
+    Scenario(id="custom_copy_using_new_and_exec", func=custom_copy_using_new_and_exec)
 ]
 
 @pytest.mark.parametrize("scenario", scenarios, ids=map(lambda x: x.id, scenarios))
