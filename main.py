@@ -1,10 +1,18 @@
-from pydantic import BaseModel, create_model, ConfigDict
+from pydantic import BaseModel, create_model, ConfigDict, PrivateAttr
 import logging
-from typing import Literal
+from typing import Literal, ClassVar
 
 logger = logging.getLogger(__name__)
 
-class Component(BaseModel):
+class AuthorMetadata:
+    author: str = ""
+    email: str = ""
+
+class VersionMetadata(AuthorMetadata):
+    version: str = ""
+    tag: str = ""
+
+class Component(BaseModel, VersionMetadata):
     model_config = ConfigDict(defer_build=True)
 
     name: str = "Component"
@@ -14,6 +22,18 @@ class Component(BaseModel):
 
     field_a: str = "value_a"
     field_b: int = 42
+
+    _private_a: int = PrivateAttr(1)
+    _private_b: int = PrivateAttr(2)
+    _private_c: int = PrivateAttr(3)
+    _private_d: int = PrivateAttr(4)
+    _private_e: int = PrivateAttr(5)
+
+    class_var_a: ClassVar[str] = "a"
+    class_var_b: ClassVar[str] = "b"
+    class_var_c: ClassVar[str] = "c"
+    class_var_d: ClassVar[str] = "d"
+    class_var_e: ClassVar[str] = "d"
 
 class Container(Component):
     name: str = "container"
@@ -51,6 +71,9 @@ def generate_subclasses(n: int):
     assert test_instance.status == "target"
     assert test_instance.field_a == "value_a"
     assert test_instance.field_b == 42
+    assert test_instance.author == ""
+    assert test_instance.class_var_a == "a"
+    assert test_instance._private_a == 1
 
 
 if __name__ == "__main__":

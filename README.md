@@ -19,10 +19,10 @@ uv run main.py
 Example output
 
 ```text
-2026-01-09 00:53:39,945 INFO     Starting generation of 10000 subclasses
-2026-01-09 00:53:40,892 INFO     Generated 10000 subclasses
-2026-01-09 00:53:40,939 INFO     DynamicModel0.__mro__=(<class '__main__.DynamicModel0'>, <class '__main__.AWSCloudContainer'>, <class '__main__.CloudContainer'>, <class '__main__.Container'>, <class '__main__.Component'>, <class 'pydantic.main.BaseModel'>, <class 'object'>)
-2026-01-09 00:53:40,939 INFO     DynamicModel0.__bases__=(<class '__main__.AWSCloudContainer'>,)
+2026-01-13 22:33:24,328 INFO     Starting generation of 10000 subclasses
+2026-01-13 22:33:26,169 INFO     Generated 10000 subclasses
+2026-01-13 22:33:26,183 INFO     DynamicModel0.__mro__=(<class '__main__.DynamicModel0'>, <class '__main__.AWSCloudContainer'>, <class '__main__.CloudContainer'>, <class '__main__.Container'>, <class '__main__.Component'>, <class 'pydantic.main.BaseModel'>, <class '__main__.VersionMetadata'>, <class '__main__.AuthorMetadata'>, <class 'object'>)
+2026-01-13 22:33:26,183 INFO     DynamicModel0.__bases__=(<class '__main__.AWSCloudContainer'>,)
 ```
 
 ## Profiling
@@ -40,10 +40,4 @@ uv run snakeviz prof/combined.prof
 
 From the profile you can see `collect_model_fields` being high because it uses `get_model_type_hints`. `get_model_type_hints` then uses `obj.__mro__` to eval every annotation for every base class.
 
-This is not necessary because `collect_model_fields` already has `parent_fields_lookup` which contains all the field info from the parents.
-
-I think `collect_model_fields` should be updated to use below logic:
-
-1. get `parent_fields_lookup` which it already does
-2. get the annotations just for obj.__mro__[0] (the class being constructed)
-3. combine 1 & 2 to give the final hints
+This means when there are lots of pydantic classes with a large hierarchy of bare classes, private attributes, class attributes or public attributes it is repeatedly scanning the hierarchy tree every single time.
